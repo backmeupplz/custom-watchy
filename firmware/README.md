@@ -7,7 +7,7 @@ Default target: Watchy V3 (`watchy-v3`); `pio run -e watchy-v2` for V1/V2. Uses 
 pio run                 # build
 tools/flash.sh          # flash V3 (waits for the watch; press a button)
 pio device monitor      # serial log
-tools/sim/run.sh        # host tests + render every screen to tools/sim/out/*.png
+tools/sim/run.sh        # host tests + screenshots to ../extras/custom/*.png
 ```
 
 ## Layout

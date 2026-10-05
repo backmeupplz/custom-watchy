@@ -1,15 +1,17 @@
 #!/bin/sh
-# Host preview of src/ui.cpp. Needs `pio run` once (for Adafruit GFX), g++ and ImageMagick.
+# Host tests + screenshots of the real drawing code (src/ui.cpp, ../src/Menu.cpp) into extras/custom/.
+# Needs `pio run` once (for Adafruit GFX), g++ and ImageMagick.
 set -e
 cd "$(dirname "$0")"
-GFX="../../.pio/libdeps/watchy/Adafruit GFX Library"
-mkdir -p out
-g++ -std=gnu++17 -O1 -DARDUINO=200 -Ishim -I"$GFX" -o out/sim sim.cpp ../../src/ui.cpp "$GFX/Adafruit_GFX.cpp"
+GFX="../../.pio/libdeps/watchy-v3/Adafruit GFX Library"
+SHOTS=../../../extras/custom
+cxx() { g++ -std=gnu++17 -O1 -DARDUINO=200 -DARDUINO_WATCHY_V20 -Ishim -I"$GFX" "$@"; }
+mkdir -p out "$SHOTS"
+cxx -o out/test_timers test_timers.cpp ../../src/timers.cpp && ./out/test_timers
+cxx -o out/test_weather test_weather.cpp ../../src/weather.cpp && ./out/test_weather
+cxx -o out/sim sim.cpp ../../src/ui.cpp ../../../src/Menu.cpp "$GFX/Adafruit_GFX.cpp"
+rm -f out/*.pbm "$SHOTS"/*.png
 ./out/sim
-g++ -std=gnu++17 -DARDUINO=200 -Ishim -I"$GFX" -o out/test_timers test_timers.cpp ../../src/timers.cpp
-./out/test_timers
-g++ -std=gnu++17 -DARDUINO=200 -Ishim -I"$GFX" -o out/test_weather test_weather.cpp ../../src/weather.cpp
-./out/test_weather
-for f in out/*.pbm; do magick "$f" -scale 300% "${f%.pbm}.png"; rm "$f"; done
-magick montage out/*.png -tile 4x -geometry +8+8 -background '#888' out/all.png
-echo "wrote tools/sim/out/*.png"
+for f in out/*.pbm; do n=$(basename "$f" .pbm); magick "$f" -scale 300% "$SHOTS/$n.png"; done
+magick montage "$SHOTS"/*.png -tile 6x -geometry +8+8 -background '#888' out/all.png
+echo "wrote extras/custom/*.png (overview: tools/sim/out/all.png)"

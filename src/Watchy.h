@@ -12,6 +12,7 @@
 #include <Fonts/FreeMonoBold9pt7b.h>
 #include "DSEG7_Classic_Bold_53.h"
 #include "Display.h"
+#include "Menu.h"
 #include "BLE.h"
 #include "bma.h"
 #include "config.h"

@@ -309,67 +309,14 @@ void Watchy::handleButtonPress() {
 }
 
 void Watchy::showMenu(byte menuIndex) {
-  display.setFullWindow();
-  display.fillScreen(GxEPD_WHITE);
-  display.setFont(&FreeMonoBold9pt7b);
-
-  int16_t x1, y1;
-  uint16_t w, h;
-  int16_t yPos;
-
-  const char *menuItems[] = {
-      "About Watchy", "Vibrate Motor", "Show Accelerometer",
-      "Set Time",     "Setup WiFi",    /*"Update Firmware",*/
-      "Sync NTP",     "Refresh Screen"};
-  for (int i = 0; i < MENU_LENGTH; i++) {
-    yPos = MENU_HEIGHT + (MENU_HEIGHT * i);
-    display.setCursor(0, yPos);
-    if (i == menuIndex) {
-      display.getTextBounds(menuItems[i], 0, yPos, &x1, &y1, &w, &h);
-      display.fillRect(x1 - 1, y1 - 10, 200, h + 15, GxEPD_BLACK);
-      display.setTextColor(GxEPD_WHITE);
-      display.println(menuItems[i]);
-    } else {
-      display.setTextColor(GxEPD_BLACK);
-      display.println(menuItems[i]);
-    }
-  }
-
-  refresh();
-
-  guiState = MAIN_MENU_STATE;
+  showFastMenu(menuIndex);
   alreadyInMenu = false;
 }
 
 void Watchy::showFastMenu(byte menuIndex) {
   display.setFullWindow();
-  display.fillScreen(GxEPD_WHITE);
-  display.setFont(&FreeMonoBold9pt7b);
-
-  int16_t x1, y1;
-  uint16_t w, h;
-  int16_t yPos;
-
-  const char *menuItems[] = {
-      "About Watchy", "Vibrate Motor", "Show Accelerometer",
-      "Set Time",     "Setup WiFi",    /*"Update Firmware",*/
-      "Sync NTP",     "Refresh Screen"};
-  for (int i = 0; i < MENU_LENGTH; i++) {
-    yPos = MENU_HEIGHT + (MENU_HEIGHT * i);
-    display.setCursor(0, yPos);
-    if (i == menuIndex) {
-      display.getTextBounds(menuItems[i], 0, yPos, &x1, &y1, &w, &h);
-      display.fillRect(x1 - 1, y1 - 10, 200, h + 15, GxEPD_BLACK);
-      display.setTextColor(GxEPD_WHITE);
-      display.println(menuItems[i]);
-    } else {
-      display.setTextColor(GxEPD_BLACK);
-      display.println(menuItems[i]);
-    }
-  }
-
+  drawMenu(display, menuIndex);
   refresh();
-
   guiState = MAIN_MENU_STATE;
 }
 
