@@ -183,6 +183,8 @@ static void check(Adafruit_GFX &d, int16_t x, int16_t y, uint16_t c) { // ~8x7 a
 void drawFace(Adafruit_GFX &d, const FaceData &f) {
   char buf[24];
   d.fillScreen(PAPER);
+  // Without timer pills, spread their row's space over the sections above (gaps grow downwards)
+  int16_t s = f.timerCount ? 0 : 1;
 
   // Date header
   text(d, 4, 15, DAYS[f.wday], &FontLabel, LEFT, 1);
@@ -191,24 +193,24 @@ void drawFace(Adafruit_GFX &d, const FaceData &f) {
 
   // Time
   sprintf(buf, "%02u:%02u", f.hour, f.minute);
-  text(d, 100, 74, buf, &FontTime, CENTER, -1);
+  text(d, 100, 74 + 4 * s, buf, &FontTime, CENTER, -1);
 
   // Current weather (left) and steps (right)
   const Weather &w = f.weather;
   if (w.valid) {
-    weatherIcon(d, 19, 98, 30, w.code, w.day);
+    weatherIcon(d, 19, 98 + 9 * s, 30, w.code, w.day);
     sprintf(buf, "%d" DEG, w.temp);
-    text(d, 40, 104, buf, &FontStat);
-    text(d, 41, 117, condition(w.code), &FontSmall, LEFT, 1);
+    text(d, 40, 104 + 9 * s, buf, &FontStat);
+    text(d, 41, 117 + 9 * s, condition(w.code), &FontSmall, LEFT, 1);
   } else {
-    text(d, 4, 104, "--" DEG, &FontStat);
-    text(d, 5, 117, "NO WEATHER", &FontSmall, LEFT, 1);
+    text(d, 4, 104 + 9 * s, "--" DEG, &FontStat);
+    text(d, 5, 117 + 9 * s, "NO WEATHER", &FontSmall, LEFT, 1);
   }
   thousands(buf, f.steps);
-  text(d, 196, 104, buf, &FontStat, RIGHT);
-  text(d, 195, 117, "STEPS", &FontSmall, RIGHT, 1);
+  text(d, 196, 104 + 9 * s, buf, &FontStat, RIGHT);
+  text(d, 195, 117 + 9 * s, "STEPS", &FontSmall, RIGHT, 1);
 
-  dottedLine(d, 125);
+  dottedLine(d, 125 + 12 * s);
 
   // Hourly forecast
   if (w.valid) {
@@ -216,13 +218,13 @@ void drawFace(Adafruit_GFX &d, const FaceData &f) {
       const HourWeather &h = w.hours[i];
       int16_t cx = 17 + i * 33;
       sprintf(buf, "%02u", h.hour);
-      text(d, cx, 140, buf, &FontSmall, CENTER);
-      weatherIcon(d, cx, 153, 18, h.code, h.day);
+      text(d, cx, 140 + 14 * s, buf, &FontSmall, CENTER);
+      weatherIcon(d, cx, 153 + 16 * s, 18, h.code, h.day);
       sprintf(buf, "%d" DEG, h.temp);
-      text(d, cx + 2, 176, buf, &FontSmall, CENTER);
+      text(d, cx + 2, 176 + 18 * s, buf, &FontSmall, CENTER);
     }
   } else {
-    text(d, 100, 156, "SET UP WIFI IN MENU", &FontSmall, CENTER, 1);
+    text(d, 100, 156 + 16 * s, "SET UP WIFI IN MENU", &FontSmall, CENTER, 1);
   }
 
   // Most recent timers

@@ -20,6 +20,9 @@ int main() {
                 {{252, 300}, {3900, 7200}, {0, 600}}, 3};
   drawFace(c, f);
   save(c, "face");
+  f.timerCount = 0;
+  drawFace(c, f);
+  save(c, "face-notimers");
 
   FaceData g = {9, 58, 4, 30, 9, 128, {true, -3, 0, true,
                 {{11, -1, 1, true}, {13, 1, 71, true}, {15, 2, 95, true}, {17, 0, 51, true}, {19, -2, 85, false}, {21, -4, 0, false}}},
