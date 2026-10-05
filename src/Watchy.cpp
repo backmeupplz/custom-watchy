@@ -230,10 +230,10 @@ void Watchy::handleButtonPress() {
   /***************** fast menu *****************/
   bool timeout     = false;
   long lastTimeout = millis();
-  pinMode(MENU_BTN_PIN, INPUT);
-  pinMode(BACK_BTN_PIN, INPUT);
-  pinMode(UP_BTN_PIN, INPUT);
-  pinMode(DOWN_BTN_PIN, INPUT);
+  pinMode(MENU_BTN_PIN, BTN_PIN_MODE);
+  pinMode(BACK_BTN_PIN, BTN_PIN_MODE);
+  pinMode(UP_BTN_PIN, BTN_PIN_MODE);
+  pinMode(DOWN_BTN_PIN, BTN_PIN_MODE);
   while (!timeout) {
     if (millis() - lastTimeout > 5000) {
       timeout = true;
@@ -415,10 +415,10 @@ void Watchy::setTime() {
 
   int8_t blink = 0;
 
-  pinMode(DOWN_BTN_PIN, INPUT);
-  pinMode(UP_BTN_PIN, INPUT);
-  pinMode(MENU_BTN_PIN, INPUT);
-  pinMode(BACK_BTN_PIN, INPUT);
+  pinMode(DOWN_BTN_PIN, BTN_PIN_MODE);
+  pinMode(UP_BTN_PIN, BTN_PIN_MODE);
+  pinMode(MENU_BTN_PIN, BTN_PIN_MODE);
+  pinMode(BACK_BTN_PIN, BTN_PIN_MODE);
 
   display.setFullWindow();
 
@@ -572,7 +572,7 @@ void Watchy::showAccelerometer() {
 
   guiState = APP_STATE;
 
-  pinMode(BACK_BTN_PIN, INPUT);
+  pinMode(BACK_BTN_PIN, BTN_PIN_MODE);
 
   while (1) {
 

@@ -33,9 +33,11 @@
   #define uS_TO_S_FACTOR 1000000ULL  //Conversion factor for micro seconds to seconds
   #define ADC_VOLTAGE_DIVIDER ((360.0f+100.0f)/360.0f) //Voltage divider at battery ADC  
   #define ACTIVE_LOW 0 // level a pressed button reads
+  #define BTN_PIN_MODE INPUT_PULLUP // Up (GPIO0) has no external pull-up and floats otherwise
 #else
   #include "WatchyRTC.h"
   #define ACTIVE_LOW 1 // level a pressed button reads
+  #define BTN_PIN_MODE INPUT // buttons have external pull-downs
 #endif
 
 typedef struct weatherData {

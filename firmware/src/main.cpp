@@ -102,7 +102,7 @@ public:
 
   void timerApp() {
     guiState = APP_STATE;
-    for (uint8_t pin : BUTTON_PINS) pinMode(pin, INPUT);
+    for (uint8_t pin : BUTTON_PINS) pinMode(pin, BTN_PIN_MODE);
     waitRelease(); // the Down press that opened us
     display.epd2.setBusyCallback(appBusyCallback);
 

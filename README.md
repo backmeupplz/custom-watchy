@@ -85,7 +85,8 @@ Every screenshot below is rendered by `firmware/tools/sim` from the same drawing
 - `onWake()` and `nextAlarm()` virtual hooks for faces that need to act on every wake or wake at a set
   time. On V1/V2 a timer wakeup was treated as a reset (clearing the step count); it is now handled.
 - Menu drawing moved to `Menu.cpp` (`drawMenu()`), shared by `showMenu()`/`showFastMenu()` and the preview tool.
-- `ACTIVE_LOW` (pressed-button level) is public in `Watchy.h`.
+- `ACTIVE_LOW` (pressed-button level) is public in `Watchy.h`; buttons use `BTN_PIN_MODE`, which fixes
+  phantom Up presses on V3 (GPIO0 floated after `pinMode(INPUT)` in the menu, Set Time and timers).
 - `library.json`: added the missing Adafruit BusIO and Time dependencies, pinned Rtc_Pcf8563 to a
   commit before its incompatible API change.
 - `.gitattributes`: binaries are no longer treated as text.
