@@ -1,18 +1,28 @@
-# Watchy - Fully Open Source E-Paper Watch
+# Custom Watchy
 
-![Watchy](https://watchy.sqfmi.com/img/watchy_render.png)
+Our firmware for [Watchy](https://watchy.sqfmi.com), forked from [sqfmi/Watchy](https://github.com/sqfmi/Watchy).
 
-**Buy Watchy from [Mouser](https://www.mouser.com/ProductDetail/SQFMI/SQFMI-WATCHY-10?qs=DRkmTr78QARN9VSJRzqRxw%3D%3D), [The Pi Hut](https://thepihut.com/collections/sqfmi), and [Crowd Supply](https://www.crowdsupply.com/sqfmi/watchy)**
+<p>
+  <img src="extras/custom/face.png" width="200" alt="Watch face">
+  <img src="extras/custom/face-cold.png" width="200" alt="Watch face, winter morning">
+  <img src="extras/custom/timers-sel.png" width="200" alt="Timer list">
+  <img src="extras/custom/picker.png" width="200" alt="New timer">
+</p>
 
-[**Watchy Case & Accessories**](https://shop.sqfmi.com)
+- 24h time, weekday, month and date
+- Step count, reset daily
+- Current weather plus the next 12 hours in 2-hour steps ([Open-Meteo](https://open-meteo.com), no API key)
+- Down button opens a multi-timer app; timers wake the watch and vibrate when done; the 3 most recent show on the face
+- Light theme everywhere, including the stock menu
 
-## Getting Started Guide
-Follow the instructions here https://watchy.sqfmi.com/docs/getting-started
+Screenshots are rendered on the host by `firmware/tools/sim`, from the same drawing code the watch runs.
 
-### Have Fun! :)
+## Layout
 
-### Got Questions?
+- [`firmware/`](firmware/README.md): our watch face and apps (PlatformIO project). Build, flash and button docs are there.
+- `src/`: the Watchy library, with small changes: `onWake()` / `nextAlarm()` hooks for extra wakeups, light menu theme,
+  fixed dependency list (`library.json`).
 
-Join our [Discord](https://discord.gg/ZXDegGV8E7)
+## Upstream
 
-
+Hardware, guides and the original firmware: https://watchy.sqfmi.com/docs/getting-started
