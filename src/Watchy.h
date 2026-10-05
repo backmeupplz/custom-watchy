@@ -31,8 +31,10 @@
   #include "driver/rtc_io.h"
   #define uS_TO_S_FACTOR 1000000ULL  //Conversion factor for micro seconds to seconds
   #define ADC_VOLTAGE_DIVIDER ((360.0f+100.0f)/360.0f) //Voltage divider at battery ADC  
+  #define ACTIVE_LOW 0 // level a pressed button reads
 #else
   #include "WatchyRTC.h"
+  #define ACTIVE_LOW 1 // level a pressed button reads
 #endif
 
 typedef struct weatherData {
@@ -101,6 +103,8 @@ public:
   void showWatchFace(bool partialRefresh);
   virtual void drawWatchFace(); // override this method for different watch
                                 // faces
+  virtual void onWake() {} // every wake except first boot, before it is handled
+  virtual time_t nextAlarm() { return 0; } // makeTime() of an extra wakeup, 0 = none
 
 private:
   void _bmaConfig();

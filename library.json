@@ -14,15 +14,33 @@
     "url": "https://github.com/sqfmi/Watchy.git"
   },
   "frameworks": "arduino",
-  "platforms": ["espressif32"],
+  "platforms": [
+    "espressif32"
+  ],
   "dependencies": [
-    { "name": "Adafruit GFX Library" },
-    { "name": "Arduino_JSON" },
-    { "name": "DS3232RTC" },
-    { "name": "NTPClient" },
+    {
+      "owner": "adafruit",
+      "name": "Adafruit BusIO"
+    },
+    {
+      "owner": "paulstoffregen",
+      "name": "Time"
+    },
+    {
+      "name": "Adafruit GFX Library"
+    },
+    {
+      "name": "Arduino_JSON"
+    },
+    {
+      "name": "DS3232RTC"
+    },
+    {
+      "name": "NTPClient"
+    },
     {
       "name": "Rtc_Pcf8563",
-      "version": "https://github.com/orbitalair/Rtc_Pcf8563.git#master"
+      "version": "https://github.com/orbitalair/Rtc_Pcf8563.git#7e2ece1"
     },
     {
       "name": "GxEPD2",
