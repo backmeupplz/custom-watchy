@@ -8,6 +8,7 @@ SHOTS=../../../extras/custom
 cxx() { g++ -std=gnu++17 -O1 -DARDUINO=200 -DARDUINO_WATCHY_V20 -Ishim -I"$GFX" "$@"; }
 mkdir -p out "$SHOTS"
 cxx -o out/test_timers test_timers.cpp ../../src/timers.cpp && ./out/test_timers
+cxx -o out/test_buttons test_buttons.cpp && ./out/test_buttons
 cxx -o out/test_weather test_weather.cpp ../../src/weather.cpp && ./out/test_weather
 cxx -o out/sim sim.cpp ../../src/ui.cpp ../../../src/Menu.cpp "$GFX/Adafruit_GFX.cpp"
 rm -f out/*.pbm "$SHOTS"/*.png

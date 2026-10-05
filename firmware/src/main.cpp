@@ -1,4 +1,5 @@
 #include <Watchy.h>
+#include "buttons.h"
 #include "settings.h"
 #include "timers.h"
 #include "ui.h"
@@ -10,7 +11,6 @@ RTC_DATA_ATTR uint32_t lastWeatherAttempt;
 RTC_DATA_ATTR uint8_t stepDay;
 RTC_DATA_ATTR uint8_t lastHms[3] = {0, 5, 0}; // picker starts at the last used duration
 
-enum Button { NONE, MENU, BACK, UP, DOWN };
 static const uint8_t BUTTON_PINS[] = {MENU_BTN_PIN, BACK_BTN_PIN, UP_BTN_PIN, DOWN_BTN_PIN};
 
 static Button readButton() {
@@ -19,15 +19,18 @@ static Button readButton() {
   return NONE;
 }
 
+static Presses presses;
+
 // The CPU light-sleeps while the display refreshes; in apps, also wake on buttons
-// and remember the press so quick taps during a refresh aren't lost.
+// and remember a new press so quick taps during a refresh aren't lost.
 static Button latched = NONE;
 static void appBusyCallback(const void *) {
   for (uint8_t pin : BUTTON_PINS)
     gpio_wakeup_enable((gpio_num_t)pin, ACTIVE_LOW ? GPIO_INTR_HIGH_LEVEL : GPIO_INTR_LOW_LEVEL);
   WatchyDisplay::busyCallback(nullptr);
   for (uint8_t pin : BUTTON_PINS) gpio_wakeup_disable((gpio_num_t)pin);
-  if (latched == NONE) latched = readButton();
+  Button b = presses.feed(readButton(), millis());
+  if (latched == NONE) latched = b;
 }
 
 class Face : public Watchy {
@@ -86,15 +89,9 @@ public:
 
   /* ---------------- timer app ---------------- */
 
-  static void waitRelease() {
-    while (readButton() != NONE) delay(10);
-  }
-
-  // Up/Down repeat while held (the display refresh paces them); Menu/Back fire once per press.
   Button waitButton(uint32_t &lastPress) {
-    Button b = latched != NONE ? latched : readButton();
+    Button b = latched != NONE ? latched : presses.feed(readButton(), millis());
     latched = NONE;
-    if (b == MENU || b == BACK) waitRelease();
     if (b != NONE) lastPress = millis();
     else delay(20);
     return b;
@@ -103,7 +100,8 @@ public:
   void timerApp() {
     guiState = APP_STATE;
     for (uint8_t pin : BUTTON_PINS) pinMode(pin, BTN_PIN_MODE);
-    waitRelease(); // the Down press that opened us
+    presses.held = DOWN; // the press that opened us
+    presses.since = millis();
     display.epd2.setBusyCallback(appBusyCallback);
 
     uint8_t sel = 0;
