@@ -13,6 +13,6 @@ cxx -o out/test_weather test_weather.cpp ../../src/weather.cpp && ./out/test_wea
 cxx -o out/sim sim.cpp ../../src/ui.cpp ../../../src/Menu.cpp "$GFX/Adafruit_GFX.cpp"
 rm -f out/*.pbm "$SHOTS"/*.png
 ./out/sim
-for f in out/*.pbm; do n=$(basename "$f" .pbm); magick "$f" -scale 300% "$SHOTS/$n.png"; done
+for f in out/*.pbm; do n=$(basename "$f" .pbm); magick "$f" -scale 300% -strip -define png:exclude-chunks=date,time "$SHOTS/$n.png"; done
 magick montage "$SHOTS"/*.png -tile 6x -geometry +8+8 -background '#888' out/all.png
 echo "wrote extras/custom/*.png (overview: tools/sim/out/all.png)"
