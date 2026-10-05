@@ -84,7 +84,7 @@ public:
   void vibMotor(uint8_t intervalMs = 100, uint8_t length = 20);
 
   virtual void handleButtonPress();
-  void showMenu(byte menuIndex, bool partialRefresh);
+  void showMenu(byte menuIndex);
   void showFastMenu(byte menuIndex);
   void showAbout();
   void showBuzz();
@@ -100,7 +100,9 @@ public:
   weatherData getWeatherData();
   void updateFWBegin();
 
-  void showWatchFace(bool partialRefresh);
+  void showWatchFace();
+  void showRefreshedWatchFace();
+  static void refresh(); // use instead of display.display()
   virtual void drawWatchFace(); // override this method for different watch
                                 // faces
   virtual void onWake() {} // every wake except first boot, before it is handled

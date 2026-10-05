@@ -106,7 +106,7 @@ public:
 
     uint8_t sel = 0;
     uint32_t lastPress = millis(), lastSecond = 0;
-    bool full = true, dirty = true;
+    bool dirty = true;
     TimerView views[MAX_TIMERS];
     while (millis() - lastPress < APP_IDLE_MS) {
       uint32_t t = now();
@@ -121,8 +121,8 @@ public:
       if (dirty) {
         uint8_t n = timerViews(t, views, MAX_TIMERS);
         drawTimerList(display, views, n, sel);
-        display.display(!full);
-        full = dirty = false;
+        refresh();
+        dirty = false;
       }
 
       Button b = waitButton(lastPress);
@@ -142,7 +142,7 @@ public:
     }
     display.epd2.setBusyCallback(WatchyDisplay::busyCallback);
     RTC.read(currentTime);
-    showWatchFace(false);
+    showWatchFace();
   }
 
   // Edits lastHms; true = start, false = cancelled.
@@ -153,7 +153,7 @@ public:
     while (millis() - lastPress < APP_IDLE_MS) {
       if (dirty) {
         drawTimerPicker(display, hms, field);
-        display.display(true);
+        refresh();
         dirty = false;
       }
       Button b = waitButton(lastPress);

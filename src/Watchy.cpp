@@ -21,6 +21,7 @@ RTC_DATA_ATTR bool USB_PLUGGED_IN = false;
 RTC_DATA_ATTR tmElements_t bootTime;
 RTC_DATA_ATTR uint32_t lastIPAddress;
 RTC_DATA_ATTR char lastSSID[30];
+RTC_DATA_ATTR time_t lastFullRefresh; // makeTime() of the last full refresh
 
 void Watchy::init(String datetime) {
   esp_sleep_wakeup_cause_t wakeup_reason;
@@ -48,7 +49,7 @@ void Watchy::init(String datetime) {
     RTC.read(currentTime);
     switch (guiState) {
     case WATCHFACE_STATE:
-      showWatchFace(true); // partial updates on tick
+      showWatchFace(); // partial updates on tick
       if (settings.vibrateOClock) {
         if (currentTime.Minute == 0) {
           // The RTC wakes us up once per minute
@@ -60,7 +61,7 @@ void Watchy::init(String datetime) {
       // Return to watchface if in menu for more than one tick
       if (alreadyInMenu) {
         guiState = WATCHFACE_STATE;
-        showWatchFace(false);
+        showWatchFace();
       } else {
         alreadyInMenu = true;
       }
@@ -76,7 +77,7 @@ void Watchy::init(String datetime) {
     USB_PLUGGED_IN = (digitalRead(USB_DET_PIN) == 1);
     if(guiState == WATCHFACE_STATE){
       RTC.read(currentTime);
-      showWatchFace(true);
+      showWatchFace();
     }
     break;
   #endif
@@ -90,7 +91,7 @@ void Watchy::init(String datetime) {
     gmtOffset = settings.gmtOffset;
     RTC.read(currentTime);
     RTC.read(bootTime);
-    showWatchFace(false); // full update on reset
+    showWatchFace(); // full update on reset
     vibMotor(75, 4);
     // For some reason, seems to be enabled on first boot
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
@@ -153,7 +154,7 @@ void Watchy::handleButtonPress() {
   if (wakeupBit & MENU_BTN_MASK) {
     if (guiState ==
         WATCHFACE_STATE) { // enter menu state if coming from watch face
-      showMenu(menuIndex, false);
+      showMenu(menuIndex);
     } else if (guiState ==
                MAIN_MENU_STATE) { // if already in menu, then select menu item
       switch (menuIndex) {
@@ -178,6 +179,9 @@ void Watchy::handleButtonPress() {
       case 5:
         showSyncNTP();
         break;
+      case 6:
+        showRefreshedWatchFace();
+        break;
       default:
         break;
       }
@@ -189,11 +193,11 @@ void Watchy::handleButtonPress() {
   else if (wakeupBit & BACK_BTN_MASK) {
     if (guiState == MAIN_MENU_STATE) { // exit to watch face if already in menu
       RTC.read(currentTime);
-      showWatchFace(false);
+      showWatchFace();
     } else if (guiState == APP_STATE) {
-      showMenu(menuIndex, false); // exit to menu if already in app
+      showMenu(menuIndex); // exit to menu if already in app
     } else if (guiState == FW_UPDATE_STATE) {
-      showMenu(menuIndex, false); // exit to menu if already in app
+      showMenu(menuIndex); // exit to menu if already in app
     } else if (guiState == WATCHFACE_STATE) {
       return;
     }
@@ -205,7 +209,7 @@ void Watchy::handleButtonPress() {
       if (menuIndex < 0) {
         menuIndex = MENU_LENGTH - 1;
       }
-      showMenu(menuIndex, true);
+      showMenu(menuIndex);
     } else if (guiState == WATCHFACE_STATE) {
       return;
     }
@@ -217,7 +221,7 @@ void Watchy::handleButtonPress() {
       if (menuIndex > MENU_LENGTH - 1) {
         menuIndex = 0;
       }
-      showMenu(menuIndex, true);
+      showMenu(menuIndex);
     } else if (guiState == WATCHFACE_STATE) {
       return;
     }
@@ -260,6 +264,9 @@ void Watchy::handleButtonPress() {
           case 5:
             showSyncNTP();
             break;
+          case 6:
+            showRefreshedWatchFace();
+            break;
           default:
             break;
           }
@@ -271,12 +278,12 @@ void Watchy::handleButtonPress() {
         if (guiState ==
             MAIN_MENU_STATE) { // exit to watch face if already in menu
           RTC.read(currentTime);
-          showWatchFace(false);
+          showWatchFace();
           break; // leave loop
         } else if (guiState == APP_STATE) {
-          showMenu(menuIndex, false); // exit to menu if already in app
+          showMenu(menuIndex); // exit to menu if already in app
         } else if (guiState == FW_UPDATE_STATE) {
-          showMenu(menuIndex, false); // exit to menu if already in app
+          showMenu(menuIndex); // exit to menu if already in app
         }
       } else if (digitalRead(UP_BTN_PIN) == ACTIVE_LOW) {
         lastTimeout = millis();
@@ -301,7 +308,7 @@ void Watchy::handleButtonPress() {
   }
 }
 
-void Watchy::showMenu(byte menuIndex, bool partialRefresh) {
+void Watchy::showMenu(byte menuIndex) {
   display.setFullWindow();
   display.fillScreen(GxEPD_WHITE);
   display.setFont(&FreeMonoBold9pt7b);
@@ -313,7 +320,7 @@ void Watchy::showMenu(byte menuIndex, bool partialRefresh) {
   const char *menuItems[] = {
       "About Watchy", "Vibrate Motor", "Show Accelerometer",
       "Set Time",     "Setup WiFi",    /*"Update Firmware",*/
-      "Sync NTP"};
+      "Sync NTP",     "Refresh Screen"};
   for (int i = 0; i < MENU_LENGTH; i++) {
     yPos = MENU_HEIGHT + (MENU_HEIGHT * i);
     display.setCursor(0, yPos);
@@ -328,7 +335,7 @@ void Watchy::showMenu(byte menuIndex, bool partialRefresh) {
     }
   }
 
-  display.display(partialRefresh);
+  refresh();
 
   guiState = MAIN_MENU_STATE;
   alreadyInMenu = false;
@@ -346,7 +353,7 @@ void Watchy::showFastMenu(byte menuIndex) {
   const char *menuItems[] = {
       "About Watchy", "Vibrate Motor", "Show Accelerometer",
       "Set Time",     "Setup WiFi",    /*"Update Firmware",*/
-      "Sync NTP"};
+      "Sync NTP",     "Refresh Screen"};
   for (int i = 0; i < MENU_LENGTH; i++) {
     yPos = MENU_HEIGHT + (MENU_HEIGHT * i);
     display.setCursor(0, yPos);
@@ -361,7 +368,7 @@ void Watchy::showFastMenu(byte menuIndex) {
     }
   }
 
-  display.display(true);
+  refresh();
 
   guiState = MAIN_MENU_STATE;
 }
@@ -410,7 +417,7 @@ void Watchy::showAbout() {
   }else{
     display.println("WiFi Not Connected");
   }
-  display.display(false); // full refresh
+  refresh(); // full refresh
 
   guiState = APP_STATE;
 }
@@ -422,9 +429,9 @@ void Watchy::showBuzz() {
   display.setTextColor(GxEPD_BLACK);
   display.setCursor(70, 80);
   display.println("Buzz!");
-  display.display(false); // full refresh
+  refresh(); // full refresh
   vibMotor();
-  showMenu(menuIndex, false);
+  showMenu(menuIndex);
 }
 
 void Watchy::vibMotor(uint8_t intervalMs, uint8_t length) {
@@ -585,7 +592,7 @@ void Watchy::setTime() {
       display.print("0");
     }
     display.print(day);
-    display.display(true); // partial refresh
+    refresh(); // partial refresh
   }
 
   tmElements_t tm;
@@ -602,7 +609,7 @@ void Watchy::setTime() {
 
   RTC.set(tm);
 
-  showMenu(menuIndex, false);
+  showMenu(menuIndex);
 }
 
 void Watchy::showAccelerometer() {
@@ -670,20 +677,39 @@ void Watchy::showAccelerometer() {
           break;
         }
       }
-      display.display(true); // full refresh
+      refresh(); // full refresh
     }
   }
 
-  showMenu(menuIndex, false);
+  showMenu(menuIndex);
 }
 
-void Watchy::showWatchFace(bool partialRefresh) {
+void Watchy::showWatchFace() {
   display.setFullWindow();
   // At this point it is sure we are going to update
   display.epd2.asyncPowerOn();
   drawWatchFace();
-  display.display(partialRefresh); // partial refresh
+  refresh();
   guiState = WATCHFACE_STATE;
+}
+
+// Partial refresh (no flashing), upgraded to a full one (flashes, clears ghosting)
+// when the last full refresh was at least an hour ago.
+void Watchy::refresh() {
+  tmElements_t tm;
+  RTC.read(tm);
+  time_t now = makeTime(tm);
+  bool full = now - lastFullRefresh >= FULL_REFRESH_INTERVAL || now < lastFullRefresh;
+  display.display(!full);
+  if (full) {
+    lastFullRefresh = now;
+  }
+}
+
+void Watchy::showRefreshedWatchFace() {
+  lastFullRefresh = 0; // forces a full refresh
+  RTC.read(currentTime);
+  showWatchFace();
 }
 
 void Watchy::drawWatchFace() {
@@ -945,7 +971,7 @@ void Watchy::setupWifi() {
     lastIPAddress = WiFi.localIP();
     WiFi.SSID().toCharArray(lastSSID, 30);
   }
-  display.display(false); // full refresh
+  refresh(); // full refresh
   // turn off radios
   WiFi.mode(WIFI_OFF);
   btStop();
@@ -967,7 +993,7 @@ void Watchy::_configModeCallback(WiFiManager *myWiFiManager) {
   display.println(WiFi.softAPIP());
 	display.println("MAC address:");
 	display.println(WiFi.softAPmacAddress().c_str());
-  display.display(false); // full refresh
+  refresh(); // full refresh
 }
 
 bool Watchy::connectWiFi() {
@@ -1006,7 +1032,7 @@ void Watchy::showUpdateFW() {
   display.println("again when ready");
   display.println(" ");
   display.println("Keep USB powered");
-  display.display(false); // full refresh
+  refresh(); // full refresh
 
   guiState = FW_UPDATE_STATE;
 }
@@ -1023,7 +1049,7 @@ void Watchy::updateFWBegin() {
   display.println(" ");
   display.println("Waiting for");
   display.println("connection...");
-  display.display(false); // full refresh
+  refresh(); // full refresh
 
   BLE BT;
   BT.begin("Watchy BLE OTA");
@@ -1043,7 +1069,7 @@ void Watchy::updateFWBegin() {
         display.println(" ");
         display.println("Waiting for");
         display.println("upload...");
-        display.display(false); // full refresh
+        refresh(); // full refresh
       }
       if (currentStatus == 1) {
         display.setFullWindow();
@@ -1056,7 +1082,7 @@ void Watchy::updateFWBegin() {
         display.println(" ");
         display.print(BT.howManyBytes());
         display.println(" bytes");
-        display.display(true); // partial refresh
+        refresh(); // partial refresh
       }
       if (currentStatus == 2) {
         display.setFullWindow();
@@ -1068,7 +1094,7 @@ void Watchy::updateFWBegin() {
         display.println("completed!");
         display.println(" ");
         display.println("Rebooting...");
-        display.display(false); // full refresh
+        refresh(); // full refresh
 
         delay(2000);
         esp_restart();
@@ -1082,7 +1108,7 @@ void Watchy::updateFWBegin() {
         display.println("BLE Disconnected!");
         display.println(" ");
         display.println("exiting...");
-        display.display(false); // full refresh
+        refresh(); // full refresh
         delay(1000);
         break;
       }
@@ -1094,7 +1120,7 @@ void Watchy::updateFWBegin() {
   // turn off radios
   WiFi.mode(WIFI_OFF);
   btStop();
-  showMenu(menuIndex, false);
+  showMenu(menuIndex);
 }
 */
 void Watchy::showSyncNTP() {
@@ -1106,7 +1132,7 @@ void Watchy::showSyncNTP() {
   display.println("Syncing NTP... ");
   display.print("GMT offset: ");
   display.println(gmtOffset);
-  display.display(false); // full refresh
+  refresh(); // full refresh
   if (connectWiFi()) {
     if (syncNTP()) {
       display.println("NTP Sync Success\n");
@@ -1138,9 +1164,9 @@ void Watchy::showSyncNTP() {
   } else {
     display.println("WiFi Not Configured");
   }
-  display.display(true); // full refresh
+  refresh(); // full refresh
   delay(3000);
-  showMenu(menuIndex, false);
+  showMenu(menuIndex);
 }
 
 bool Watchy::syncNTP() { // NTP sync - call after connecting to WiFi and
