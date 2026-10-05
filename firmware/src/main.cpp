@@ -57,7 +57,8 @@ public:
 
   void drawWatchFace() override {
     uint32_t t = makeTime(currentTime);
-    if (t - lastWeatherAttempt >= WEATHER_INTERVAL_MIN * 60 || t < lastWeatherAttempt) {
+    uint32_t interval = (weatherView(t).valid ? WEATHER_INTERVAL_MIN : WEATHER_RETRY_MIN) * 60;
+    if (t - lastWeatherAttempt >= interval || t < lastWeatherAttempt) {
       lastWeatherAttempt = t;
       if (connectWiFi()) {
         int32_t offset;
@@ -79,6 +80,7 @@ public:
     FaceData f = {currentTime.Hour, currentTime.Minute, currentTime.Wday, currentTime.Day, currentTime.Month,
                   sensor.getCounter(), weatherView(t)};
     f.timerCount = timerViews(t, f.timers, FACE_TIMERS);
+    f.wifi = WIFI_CONFIGURED;
     drawFace(display, f);
   }
 

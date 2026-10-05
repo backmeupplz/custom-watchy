@@ -31,6 +31,7 @@ struct FaceData {
   Weather weather;
   TimerView timers[FACE_TIMERS]; // most recent first
   uint8_t timerCount;
+  bool wifi; // last connection attempt succeeded
 };
 
 void drawFace(Adafruit_GFX &d, const FaceData &f);

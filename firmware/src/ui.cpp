@@ -224,7 +224,7 @@ void drawFace(Adafruit_GFX &d, const FaceData &f) {
       text(d, cx + 2, 176 + 18 * s, buf, &FontSmall, CENTER);
     }
   } else {
-    text(d, 100, 156 + 16 * s, "SET UP WIFI IN MENU", &FontSmall, CENTER, 1);
+    text(d, 100, 156 + 16 * s, f.wifi ? "WEATHER UNAVAILABLE" : "NO WIFI: MENU > SETUP WIFI", &FontSmall, CENTER, 1);
   }
 
   // Most recent timers

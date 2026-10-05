@@ -4,6 +4,7 @@
 #define LAT "49.2827"
 #define LON "-123.1207"
 #define WEATHER_INTERVAL_MIN 30 // also re-syncs NTP time
+#define WEATHER_RETRY_MIN 5     // while there is no usable forecast
 
 watchySettings settings{
     .lat = LAT,

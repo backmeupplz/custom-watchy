@@ -33,6 +33,9 @@ int main() {
   FaceData h = {0, 0, 4, 1, 1, 0, {false}, {}, 0};
   drawFace(c, h);
   save(c, "face-noweather");
+  h.wifi = true;
+  drawFace(c, h);
+  save(c, "face-noweather-wifi");
 
   TimerView t[] = {{252, 300}, {3900, 7200}, {0, 600}, {12, 90}, {0, 45}, {1000, 1500}, {0, 60}};
   drawTimerList(c, t, 7, 0);
