@@ -147,7 +147,7 @@ public:
 
   // Edits lastHms; true = start, false = cancelled.
   bool pickDuration(uint32_t &lastPress) {
-    static const uint8_t LIMIT[] = {24, 60, 60}, STEP[] = {1, 1, 5};
+    static const uint8_t LIMIT[] = {24, 60, 60};
     uint8_t hms[3] = {lastHms[0], lastHms[1], lastHms[2]}, field = 0;
     bool dirty = true;
     while (millis() - lastPress < APP_IDLE_MS) {
@@ -158,8 +158,8 @@ public:
       }
       Button b = waitButton(lastPress);
       dirty = b != NONE;
-      if (b == UP) hms[field] = (hms[field] + STEP[field]) % LIMIT[field];
-      if (b == DOWN) hms[field] = (hms[field] + LIMIT[field] - STEP[field]) % LIMIT[field];
+      if (b == UP) hms[field] = (hms[field] + 1) % LIMIT[field];
+      if (b == DOWN) hms[field] = (hms[field] + LIMIT[field] - 1) % LIMIT[field];
       if (b == BACK) {
         if (field == 0) return false;
         field--;
